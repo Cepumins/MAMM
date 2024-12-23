@@ -17,20 +17,30 @@ numerical_values = {
 }
 
 # Define the symbols
-a, x, y, ask = sp.symbols('a x y ask')
+#a, x, y, ask = sp.symbols('a x y ask')
+p0, x0, y0, p1, x1, y1, i, dx, k, t, beta, r, dy, gx = sp.symbols('p1, x0, y0, p1, x1, y1, i, dx, k, t, beta, r, dy, gx')
 
 # Expression for inv
-inv = x**a * y**(1 - a)
+#inv = x**a * y**(1 - a)
+p0 = y0 / x0
+p1 = y1 / x1
+i = k * t ** beta
+#r = i * (- dx)
+gx = dx / x0
+r = k * (abs(gx)) ** beta
+dy = y1 - y0
+
 
 # Define the equation after substituting inv
-equation = sp.Eq((inv / (x - 1)**a)**(1 / (1 - a)) - ask, y)
+#equation = sp.Eq((inv / (x - 1)**a)**(1 / (1 - a)) - ask, y)
+equation = sp.Eq(p0 * (1 + r) ** (-1), p1)
 
 # Solve the equation for 'a'
 
-formula_a = sp.solve(equation, a)
+formula_a = sp.solve(equation, y1)
 
 # Display the solution
-print("Formula for a:")
+print("Formula for y1:")
 for sol in formula_a:
     print(sol)
 

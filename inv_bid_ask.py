@@ -18,14 +18,20 @@ numerical_values = {
 }
 
 # Define the symbols
-x, y, z, a, b, inv = sp.symbols('x, y, z, a, b, inv')
+x, y, z, yw, zw, inv = sp.symbols('x, y, z, yw, zw, inv')
 
 # Expression for inv
 #inv = x**a * y**(1 - a)
 
 # Define the equation after substituting inv
 #equation = sp.Eq((inv / (x - 1)**a)**(1 / (1 - a)) - ask, y)
-equation = sp.Eq((x**a) * (z ** b) * (y ** (1 - a - b)), inv)
+equation = sp.Eq((x**xw) * (y**yw) * (z ** (1 - a - b)), inv)
+
+sol_x = solve(equation, x)
+#sol_y = solve(equation, y)
+
+# Print the solutions
+print(f"Solution for x: {sol_x}")
 
 # Solve the equation for 'a'
 

@@ -1,33 +1,22 @@
-import scipy.optimize as opt
-from sympy import symbols, sqrt, lambdify
-import sympy as sp
-
-# Define the equation to solve
-def equation(x):
-    return (x * 0.0347 / 12) - 6 - (x * 0.0302 / 12)
-
-# Use scipy's fsolve to find the root of the equation
-solution = opt.fsolve(equation, 30000)  # Initial guess is 0
-
-print(f"The solution for x is: {solution[0]}")
 
 
+other_balances_product = 471.6060105093215
+weights = [0.3]
+initial_pool = 250000
+balances = [329.3084522502744]
+print(balances)
+usd_balance = initial_pool * 0.4
+fee = 0.002
+print(usd_balance)
 
-# Define the symbols
-x, y, a, b = sp.symbols('x, y, a, b')
+print("other asset balances produt: ", other_balances_product)
+inv = other_balances_product * (balances[0]**weights[0])
+print("invariant: ", inv)
 
-# Expression for inv
-#inv = x**a * y**(1 - a)
+bid_price = abs((((inv / ((balances[0] + 1) ** weights[0] * other_balances_product)) ** (1 / 0.4)) - usd_balance) * (1 - fee))
+ask_price = abs(((inv / ((balances[0] - 1) ** weights[0] * other_balances_product)) ** (1 / 0.4) - usd_balance) * (1 + fee))
 
-# Define the equation after substituting inv
-#equation = sp.Eq((inv / (x - 1)**a)**(1 / (1 - a)) - ask, y)
-equation = sp.Eq((x*a / 12), (x * b / 12) + y)
+print(bid_price)
+print(ask_price)
 
-# Solve the equation for 'a'
-
-formula_y = sp.solve(equation, x)
-
-# Display the solutionš
-print("Formula for y:")
-for sol in formula_y:
-    print(sol)
+print((inv / ((balances[0] + 1) ** weights[0] * other_balances_product)) ** (1 / 0.4))
