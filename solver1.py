@@ -18,10 +18,12 @@ numerical_values = {
 
 # Define the symbols
 #a, x, y, ask = sp.symbols('a x y ask')
-x, y, z, wx, wy, wz, inv, dx, dy = sp.symbols('x, y, z, wx, wy, wz, inv, dx, dy')
+x, y, z, wx, wy, wz, inv, dx, dy, p, c, px, pn = sp.symbols('x, y, z, wx, wy, wz, inv, dx, dy, p, c, px, pn', positive = True)
 
 # Expression for inv
-inv = x**wx * y**wy
+#px = p * c
+#pn = p / c
+#inv = x**wx * y**wy * z**wz
 #PV = C * (1 / r - 1 / (r * (1 + r)**t)) + FV / (1 + r)**t
 #a = b * c
 #px = (y / wy) / (x / wx)
@@ -30,12 +32,13 @@ inv = x**wx * y**wy
 #inv = x**wx * y**wy
 #new_y = (inv**(1/wx)*px*p_mult*wx/wy)**(wx/(wx+wy))
 inv = x * y
+#inv = (x + inv / sqrt(px)) * (y + inv * sqrt(pn))
 
 
 # Define the equation after substituting inv
 #equation = sp.Eq((inv / (x - 1)**a)**(1 / (1 - a)) - ask, y)
-#equation = sp.Eq( (x-dx)**wx * (y+dy)**wy * z**wz, inv)
-equation = sp.Eq( (x - dx) * (y + dy), inv)
+#equation = sp.Eq( (x + dx + inv / sqrt(px)) * (y - dy + inv * sqrt(pn)), inv)
+equation = sp.Eq( (x + dx) * (y - dy), inv)
 
 # Solve the equation for 'a'
 
