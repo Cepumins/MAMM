@@ -1,0 +1,264 @@
+results = []
+result_tables = []
+direction = {}
+#sim_table = starting_table
+for order_size in order_sizes:
+    print(f"Order Size simulation: {order_size}")
+    # Loop through each fee variation
+    for fee_percentage in fee_values:
+        print(f"Fee % simulation: {fee_percentage}")
+        sim_table = starting_table.copy()
+        trades = 0
+        fees_earned = 0
+        fee = fee_percentage / 100
+        # Initialize balances and invariant
+        #balances = {asset: (initial_pool * weights[asset]) / spots[asset] for asset in assets}
+
+
+        trades_log = []
+        end_of_period_values = []
+
+        # Loop through each unique time period
+        # Fetch data for each asset at the current time and update last close prices if needed
+        open_prices = {}
+        last_close_prices = {}
+        #open_prices[asset] = spots["USD"]
+        #last_close_prices[asset] = spots["USD"]
+        times = 0
+        missing_data_log = {}
+        for time in filtered_times:
+            '''times += 1
+            if times > 2:
+                break'''
+            #if trades > 10:
+                #rint("breaking")
+                #break
+
+            if True:
+                print(time)
+                if False:
+                    print(sim_table)
+            missing_data_assets = set()
+            #
+            for asset in sim_table.index:
+                if asset == base_asset:
+                    #open_prices[asset] = spots["USD"]
+                    #last_close_prices[asset] = spots["USD"]
+                    pass
+                else:
+                    direction[asset] = None
+                    #asset_data = data[asset]
+                    #row = asset_data[asset_data[time_col] == time]
+                    asset_df = asset_data[asset]
+                    row = asset_df[asset_df[time_col] == time]
+                    if row.empty:
+                        if False:
+                            print(f"No data for asset {asset} at time {time}")
+                        missing_data_assets.add(asset)  # Flag the asse
+                        # Log the missing data for later analysis
+                        if time not in missing_data_log:
+                            missing_data_log[time] = []
+                        missing_data_log[time].append(asset)
+                        continue
+                    else:
+                        #sim_table.at[asset, "spot"] = row[time_period_price_col].values[0]
+                        sim_table.at[asset, "spot"] = row["Open"].values[0]
+                        sim_table.at[asset, "value"] = sim_table.at[asset, "balance"] / sim_table.at[asset, "spot"]
+
+                        # Define `market_bid` and `market_ask` once for the current time and asset
+                        market_bid = row['Bid'].values[0]
+                        market_ask = row['Ask'].values[0]
+                        
+                        sim_table.at[asset, "market_bid"] = market_bid  # Optional: Store for later use
+                        sim_table.at[asset, "market_ask"] = market_ask  # Optional: Store for later use
+
+                        if True:
+                            print(f"Asset: {asset}")
+                            print(row)
+                            
+                            print(f"1 {moe_asset} (MOE) = bid: {market_bid}, ask: {market_ask}")
+                            #print(f"Market bid: {1 / market_bid}, Market ask: {1 / market_ask} (in terms of MOE)")
+                    '''if not row.empty:
+                        sim_table.at[asset, "spot"] = row['Open'].values[0]
+                        last_close_prices[asset] = row['Close'].values[0]
+                    else:
+                        open_prices[asset] = sim_table.at[asset, "spot"]'''
+                        
+
+            # Trading loop for each asset
+            continue_trading = True
+            while continue_trading:
+                continue_trading = False
+
+                for asset in sim_table.index:
+                    if asset == base_asset or asset in missing_data_assets:  # Skip flagged assets for this time
+                        continue
+
+                    #print(asset)
+                    market_bid = sim_table.at[asset, "market_bid"]
+                    market_ask = sim_table.at[asset, "market_ask"]
+
+                    '''
+                    # Fetch high and low prices for the asset
+                    row = asset_df[asset][asset_df[asset][time_col] == time]
+                    if not row.empty:
+                        #high_price = row['High'].values[0]
+                        #low_price = row['Low'].values[0]
+                        market_bid = row['Bid'].values[0]
+                        market_ask = row['Ask'].values[0]
+
+                        # Calculate bid and ask prices for the current asset
+                        other_balances_product = 1
+                        for other_asset in assets:
+                            if other_asset != asset and other_asset != "USD":
+                                #print("other asset: ", other_asset, " balance: ", balances[other_asset], " weight: ", weights[other_asset])
+                                other_balances_product *= balances[other_asset] ** weights[other_asset]
+
+                        inv = calculate_invariant(balances, weights)'''
+                    #inv = calculate_invariant(sim_table)
+                    balance = sim_table.at[asset, "balance"]
+                    weight = sim_table.at[asset, "weight"]
+
+                    moe_balance = sim_table.at[base_asset, "balance"]
+                    moe_weight = sim_table.at[base_asset, "weight"]
+                    
+                    if False:
+                        print(f"Balance: {balance}, weight: {weight}")
+                        other_balances_product = inv / (balance ** weight)
+                        print(f"Inv: {inv}, Other bal product: {other_balances_product}")
+                    #print("other asset balances produt: ", other_balances_product)
+                    #print("balance of the asset: ", balances[asset])
+                    #print("invariant: ", balances[asset]**weights[asset] * other_balances_product)
+
+                    #bid_amount_wo_fee = abs(((inv / ((balance + order_size) ** weight * other_balances_product)) ** (1 / sim_table.at["USD", "weight"]) - sim_table.at["USD", "balance"]))
+                    #ask_amount_wo_fee = abs(((inv / ((balance - order_size) ** weight * other_balances_product)) ** (1 / sim_table.at["USD", "weight"]) - sim_table.at["USD", "balance"]))
+
+                    #bid_amount_wo_fee = sim_table.at["USD", "balance"] - (((sim_table.at["USD", "balance"]**sim_table.at["USD", "weight"] * balance**weight) / ((balance + order_size)**weight)))**(1 / sim_table.at["USD", "weight"])
+                    #ask_amount_wo_fee = -sim_table.at["USD", "balance"] + (((sim_table.at["USD", "balance"]**sim_table.at["USD", "weight"] * balance**weight) / ((balance - order_size)**weight)))**(1 / sim_table.at["USD", "weight"])
+                    
+
+                    #bid_amount_wo_fee = moe_balance - (((moe_balance**moe_weight * balance**weight) / ((balance + order_size)**weight)))**(1 / moe_weight)
+                    #ask_amount_wo_fee = -moe_balance+ (((moe_balance**moe_weight * balance**weight) / ((balance - order_size)**weight)))**(1 / moe_weight)
+
+                    bid_amount_wo_fee = balance - (((moe_balance**moe_weight * balance**weight) / ((moe_balance + order_size)**moe_weight)))**(1 / weight)
+                    ask_amount_wo_fee = -balance+ (((moe_balance**moe_weight * balance**weight) / ((moe_balance - order_size)**moe_weight)))**(1 / weight)
+
+                    if True:
+                        print(f"1 {moe_asset} (MOE) = bid: {market_bid}, ask: {market_ask}")
+                        print(asset, " bid (wo fee): ", bid_amount_wo_fee)
+                        print(asset, " ask (wo fee): ", ask_amount_wo_fee)
+                    
+                    bid_amount = bid_amount_wo_fee * (1 - fee)
+                    ask_amount = ask_amount_wo_fee * (1 + fee)
+
+                    bid_price = bid_amount / order_size
+                    ask_price = ask_amount / order_size
+
+                    if True:
+                        print(asset, " bid: ", bid_price)
+                        print(asset, " ask: ", ask_price)
+
+                    # Sell asset
+                    if market_bid > ask_price and direction[asset] != "buy":
+                        if balance >= order_size:
+                            direction[asset] = "sell"
+                            trades += 1
+                            if True:
+                                print("Trade: ", trades)
+                                pretty_print_table(sim_table)
+                                #trades_log.append({'Time': time, 'Asset': asset, 'Action': 'Sell', 'Shares': 1, 'Price': ask_price})
+                                #print({'Time': time, 'Asset': asset, 'Action': 'Sell', 'Shares': 1, 'Price': ask_price})
+                                #trade_printout = {'Time': time, 'Asset': asset, 'Action': 'Sell', 'Quantity': order_size, 'Amount': round(float(ask_amount), 4), 'Price': round(float(ask_amount_wo_fee), 4)}
+                                #trade_printout = {'Time': time, "Sold": {ask_amount}, "of": {asset}, "for": {order_size}, "of": {moe_asset}, f"(exch: {ask_price})": None}
+                                '''trade_printout = {
+                                    "Time": str(time),
+                                    "Bought": f"{float(ask_amount):.2f}",
+                                    "of": asset,
+                                    "for": f"{order_size}",
+                                    "of": moe_asset,
+                                    "Exchange Rate": f"{float(ask_price):.4f}"
+                                }'''
+                                trade_printout = f"[At: {time}] Bought {float(ask_amount):.4f} {asset} for {order_size} {moe_asset} (exch: {float(ask_price):.4f})"
+                                trades_log.append(trade_printout)
+                                print(trade_printout)
+
+                            sim_table.at[base_asset, "balance"] -= order_size
+                            sim_table.at[asset, "balance"] += ask_amount
+
+                            sim_table.at[base_asset, "value"] = sim_table.at[base_asset, "balance"]
+                            sim_table.at[asset, "value"] = sim_table.at[asset, "balance"] / sim_table.at[asset, "spot"]
+                            fees_earned += (ask_amount - ask_amount_wo_fee) / sim_table.at[asset, "spot"]
+
+                            #inv = calculate_invariant(sim_table)
+                            if True:
+                                print(f"Fee earned: {round((ask_amount - ask_amount_wo_fee) / sim_table.at[asset, "spot"], 4)} {moe_asset} (total: {round(fees_earned, 4)} {moe_asset}), {asset} fee: {ask_amount - ask_amount_wo_fee}, With fee: {round(ask_amount, 4)}, without fee {round(ask_amount_wo_fee, 4)}")
+                                pretty_print_table(sim_table)
+                                print()
+                            continue_trading = True  # Check for more trades within the period
+                            break
+
+                    # Buy asset
+                    elif market_ask < bid_price and direction[asset] != "sell":
+                        if moe_balance >= bid_price:
+                            direction[asset] = "buy"
+
+                            if True:
+                                trades += 1
+                                print("Trade: ", trades)
+                                pretty_print_table(sim_table)
+                                #trade_printout = {'Time': time, 'Asset': asset, 'Action': 'Buy', 'Quantity': order_size, 'Amount': round(float(bid_amount), 4), 'Price': round(float(bid_price), 4)}
+                                #trade_printout = {'Time': time, "Bought": {ask_amount}, "of": {asset}, "for": {order_size}, "of": {moe_asset}, f"(exch: {bid_price})": None}
+                                '''trade_printout = {
+                                    "Time": str(time),
+                                    "Bought": f"{float(bid_amount):.2f}",
+                                    "of": asset,
+                                    "for": f"{order_size}",
+                                    "of": moe_asset,
+                                    "Exchange Rate": f"{float(bid_price):.4f}"
+                                }'''
+                                trade_printout = f"[At: {time}] Sold {float(bid_amount):.4f} {asset} for {order_size} {moe_asset} (exch: {float(bid_price):.4f})"
+                                trades_log.append(trade_printout)
+                                print(trade_printout)
+                            sim_table.at[base_asset, "balance"] += order_size
+                            sim_table.at[asset, "balance"] -= bid_amount
+
+                            sim_table.at[base_asset, "value"] = sim_table.at[base_asset, "balance"]
+                            sim_table.at[asset, "value"] = sim_table.at[asset, "balance"] / sim_table.at[asset, "spot"]
+
+                            fees_earned += (bid_amount_wo_fee - bid_amount) / sim_table.at[asset, "spot"]
+
+                            #inv = calculate_invariant(balances, weights)
+                            if True:
+                                #print(f"Fee earned: {round(bid_amount_wo_fee - bid_amount, 4)} (total: {round(fees_earned, 4)}), With fee: {round(bid_amount, 4)}, without fee {round(bid_amount_wo_fee, 4)}")
+                                print(f"Fee earned: {round((bid_amount_wo_fee - bid_amount) / sim_table.at[asset, "spot"], 4)} {moe_asset} (total: {round(fees_earned, 4)} {moe_asset}), {asset} fee: {bid_amount_wo_fee - bid_amount}, With fee: {round(bid_amount, 4)}, without fee {round(bid_amount_wo_fee, 4)}")
+                                pretty_print_table(sim_table)
+                                print()
+                            continue_trading = True  # Check for more trades within the period
+                            break
+
+            '''for asset in sim_table.index:
+                if asset == base_asset:
+                    pass
+                else:
+                    row = asset_df[asset_df[time_col] == time]
+                    # sim_table.at[asset, "spot"] = row['Close'].values[0]
+
+                    sim_table.at[asset, "value"] = sim_table.at[asset, "balance"] / sim_table.at[asset, "spot"]'''
+
+            # Calculate end-of-period pool value
+            '''pool_value = balances["USD"]
+            il_formula_end_value = 1
+            for asset in assets:
+                if asset != "USD":
+                    pool_value += balances[asset] * last_close_prices[asset]
+                    il_formula_end_value *= (last_close_prices[asset] / )
+            end_of_period_values.append(pool_value)'''
+            end_of_period_values.append(sim_table["value"].sum())
+
+        # Record the final pool value for the current fee
+        final_pool_value = end_of_period_values[-1]
+        results.append({'Order Size': order_size, 'Fee %': fee_percentage, 'Final_Pool_Value': final_pool_value, "Fees": fees_earned, "Trades": trades})
+        result_tables.append(sim_table)
+
+# Convert results to DataFrame for comparison
+results_df = pd.DataFrame(results)
